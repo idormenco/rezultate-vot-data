@@ -498,7 +498,7 @@ async function processTur1Data() {
   );
 
   await fs.writeFile(
-    "data/elect_1992/round_1_data.sql",
+    "data/elect_1992/output/round_1_data.sql",
     [
       ...partyInsertsRound1,
       ...candidateInsertsRound1,
@@ -510,22 +510,22 @@ async function processTur1Data() {
   );
 
   await fs.writeFile(
-    "data/elect_1992/tur_1_data.csv",
+    "data/elect_1992/output/tur_1_data.csv",
     stringify(dataPerCountyTur1, { header: true }),
     "utf8"
   );
   await fs.writeFile(
-    "data/elect_1992/tur_1_votes.csv",
+    "data/elect_1992/output/tur_1_votes.csv",
     stringify(votesDataTur1, { header: true }),
     "utf8"
   );
   await fs.writeFile(
-    "data/elect_1992/tur_1_records.csv",
+    "data/elect_1992/output/tur_1_records.csv",
     stringify(recordsDataTur1, { header: true }),
     "utf8"
   );
   await fs.writeFile(
-    "data/elect_1992/tur_1_turnouts.csv",
+    "data/elect_1992/output/tur_1_turnouts.csv",
     stringify(turnoutsDataTur1, { header: true }),
     "utf8"
   );
@@ -563,7 +563,7 @@ async function processTur2Data() {
   );
 
   await fs.writeFile(
-    "data/elect_1992/round_2_data.sql",
+    "data/elect_1992/output/round_2_data.sql",
     [
       ...partyInsertsRound2,
       ...candidateInsertsRound2,
@@ -575,22 +575,22 @@ async function processTur2Data() {
   );
 
   await fs.writeFile(
-    "data/elect_1992/tur_2_data.csv",
+    "data/elect_1992/output/tur_2_data.csv",
     stringify(dataPerCountyTur2, { header: true }),
     "utf8"
   );
   await fs.writeFile(
-    "data/elect_1992/tur_2_votes.csv",
+    "data/elect_1992/output/tur_2_votes.csv",
     stringify(votesDataTur2, { header: true }),
     "utf8"
   );
   await fs.writeFile(
-    "data/elect_1992/tur_2_records.csv",
+    "data/elect_1992/output/tur_2_records.csv",
     stringify(recordsDataTur2, { header: true }),
     "utf8"
   );
   await fs.writeFile(
-    "data/elect_1992/tur_2_turnouts.csv",
+    "data/elect_1992/output/tur_2_turnouts.csv",
     stringify(turnoutsDataTur2, { header: true }),
     "utf8"
   );
@@ -598,6 +598,8 @@ async function processTur2Data() {
 
 async function processElectionData() {
   const start = Date.now();
+  await fs.mkdir("data/elect_1992/output");
+
   await processTur1Data();
   await processTur2Data();
 
