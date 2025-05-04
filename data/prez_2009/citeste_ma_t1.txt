@@ -1,0 +1,50 @@
+
+  Structura fisier SECTII_P.DBF,SECTII_P.XLS (Alegerea presedintelui, 22 noeimbrie 2009)
+  
+  NCE     = numarul circumscriptiei electorale (1 la 48)
+  JUDET   = numele circumscriptiei electorale
+  SIRUTA  = cod Siruta localitate
+  DENLOC  = denumire localitate
+  SV      = numarul sectiei de votare
+  ADRESA  = adresa sectiei de votare
+  A       = numarul total al alegatorilor prevazut in copia de pe lista electorala
+            permanenta existenta in sectia de votare
+  B       = numarul total al alegatorilor care s-au prezentat la urne
+  B1      = numarul total al alegatorilor care s-au prezentat la urne, inscrisi in copia
+            de pe lista electorala permanenta
+  B2      = numarul total al alegatorilor care s-au prezentat la urne si nu sunt cuprinsi
+            in copia de pe lista electorala permanenta, inscrisi in tabelul prevazut la 
+            art. 7 alin. (1) din Legea nr. 370/2004, cu modificarile si completarile 
+            ulterioare  
+  B3      = numarul total al alegatorilor care au votat utilizand urna speciala,
+            inscrisi in tabelul prevazut la art. 7 alin. (2) din Legea nr. 370/2004,
+            cu modificarile si completarile ulterioare   
+  C       = numarul total al voturilor valabil exprimate                       
+  D       = numarul voturilor nule
+  E       = numarul buletinelor de vot primite
+  F       = numarul buletinelor de vot neintrebuintate si anulate
+  
+            Numarul voturilor valabil exprimate obtinute
+            
+  P1      = George-Crin-Laurentiu ANTONESCU          
+  P2      = Mircea-Dan GEOANA
+  P3      = Hunor KELEMEN
+  P4      = Traian BASESCU
+  P5      = Sorin-Mircea OPRESCU
+  P6      = George BECALI
+  P7      = Ovidiu-Cristian IANE
+  P8      = Gheorghe-Eduard MANOLE
+  P9      = Corneliu VADIM-TUDOR
+  P10     = Remus-Florinel CERNEA
+  P11     = Constantin-Ninel POTIRCA
+  P12     = Constantin ROTARU
+  
+  
+  SPEC    =  1 - sectie de votare speciala
+             2 - sectie de votare din strainatate
+             0 - sectie de votare normala
+  MEDIU   =  1  - Urban
+             3  - Rural
+  SORTARE =  factor de sortare localitati in cadrul judetului
+             
+  

@@ -1,0 +1,384 @@
+
+***  CITESTE.MA ***
+
+1. Fisierele aplicatiei informatice ELECT'96 :
+
+     - tur1_cd.dbf   - alegeri deputati
+     - tur1_s.dbf    - alegeri senatori
+     - tur1_p1.dbf   - alegeri presedinte turul 1
+     - tur2_p2.dbf   - alegeri presedinte turul 2
+     - pres1.dbf     - nomenclator presedinte turul 1
+     - nomunic.dbf   - nomenclator partide deputati si senatori
+
+2. Structura fisierelor :
+
+2.1. Deputati
+
+Structure for database: \ELECT96\TUR1_CD.DBF
+Number of data records:   15119
+Date of last update   : 11/09/96
+Code Page             : 0
+Field  Field Name  Type       Width    Dec    Index  Collate
+    1  NCE         Numeric        8   Numar circumscriptie electorala (1-42)
+    2  NSV         Numeric        8   Numar sectie de votare (numar secvential
+                                       in cadrul judetului)
+    3  NCAS        Numeric        8   Numar candidati(partide,formatiuni,independenti)
+                                       in cadrul circumscriptiei electorale
+    4  A_SVD       Numeric        8   Numarul total al alegatorilor potrivit listelor
+                                       electorale permanente
+    5  AP_SVD      Numeric        8   Numarul total al alegatorilor care s-au
+                                       prezentat la urne
+    6  APP_SVD     Numeric        8   Numarul alegatorilor de pe listele electorale
+                                       permanente care s-au prezentat la urne
+    7  APS_SVD     Numeric        8   Numarul alegatorilor care s-au prezentat la urne
+                                       inscrisi pe listele electorale speciale
+    8  TVE_SV      Numeric        8   Numarul total al voturilor valabil exprimate
+    9  VN_SV       Numeric        8   Numarul total al voturilor nule
+   10  DENL        Character     40   Denumire localitate
+   11  TIPL        Character      1   Tip localitate :  M - municipiu
+                                                        O - oras
+                                                        C - comuna
+   12  ZONA        Numeric        2   Zona(regiunea statistica) (1-8)
+   13  CODL        Numeric        3   Cod localitate(numar secvential in cadrul
+                                       judetului)
+   14  P1          Numeric       10   Numar voturi valabil exprimate pentru partidele
+                                       P1.....P95 (P1...P95 conform Codu din
+                                       NOMUNIC.DBF)
+   15  P2          Numeric       10
+   16  P3          Numeric       10
+   17  P4          Numeric       10
+   18  P5          Numeric       10
+   19  P6          Numeric       10
+   20  P7          Numeric       10
+   21  P8          Numeric       10
+   22  P9          Numeric       10
+   23  P10         Numeric       10
+   24  P11         Numeric       10
+   25  P12         Numeric       10
+   26  P13         Numeric       10
+   27  P14         Numeric       10
+   28  P15         Numeric       10
+   29  P16         Numeric       10
+   30  P17         Numeric       10
+   31  P18         Numeric       10
+   32  P19         Numeric       10
+   33  P20         Numeric       10
+   34  P21         Numeric       10
+   35  P22         Numeric       10
+   36  P23         Numeric       10
+   37  P24         Numeric       10
+   38  P25         Numeric       10
+   39  P26         Numeric       10
+   40  P27         Numeric       10
+   41  P28         Numeric       10
+   42  P29         Numeric       10
+   43  P30         Numeric       10
+   44  P31         Numeric       10
+   45  P32         Numeric       10
+   46  P33         Numeric       10
+   47  P34         Numeric       10
+   48  P35         Numeric       10
+   49  P36         Numeric       10
+   50  P37         Numeric       10
+   51  P38         Numeric       10
+   52  P39         Numeric       10
+   53  P40         Numeric       10
+   54  P41         Numeric       10                  
+   55  P42         Numeric       10                  
+   56  P43         Numeric       10
+   57  P44         Numeric       10                  
+   58  P45         Numeric       10
+   59  P46         Numeric       10                  
+   60  P47         Numeric       10                  
+   61  P48         Numeric       10                  
+   62  P49         Numeric       10                  
+   63  P50         Numeric       10                  
+   64  P51         Numeric       10                  
+   65  P52         Numeric       10
+   66  P53         Numeric       10
+   67  P54         Numeric       10
+   68  P55         Numeric       10                  
+   69  P56         Numeric       10                  
+   70  P57         Numeric       10
+   71  P58         Numeric       10                  
+   72  P59         Numeric       10                  
+   73  P60         Numeric       10
+   74  P61         Numeric       10                  
+   75  P62         Numeric       10
+   76  P63         Numeric       10                  
+   77  P64         Numeric       10                  
+   78  P65         Numeric       10                  
+   79  P66         Numeric       10                  
+   80  P67         Numeric       10                  
+   81  P68         Numeric       10                  
+   82  P69         Numeric       10
+   83  P70         Numeric       10
+   84  P71         Numeric       10
+   85  P72         Numeric       10                  
+   86  P73         Numeric       10                  
+   87  P74         Numeric       10
+   88  P75         Numeric       10                  
+   89  P76         Numeric       10                  
+   90  P77         Numeric       10
+   91  P78         Numeric       10                  
+   92  P79         Numeric       10
+   93  P80         Numeric       10                  
+   94  P81         Numeric       10                  
+   95  P82         Numeric       10                  
+   96  P83         Numeric       10                  
+   97  P84         Numeric       10                  
+   98  P85         Numeric       10                  
+   99  P86         Numeric       10
+  100  P87         Numeric       10
+  101  P88         Numeric       10
+  102  P89         Numeric       10                  
+  103  P90         Numeric       10                  
+  104  P91         Numeric       10
+  105  P92         Numeric       10                  
+  106  P93         Numeric       10                  
+  107  P94         Numeric       10
+  108  P95         Numeric       10                  
+** Total **                    1069
+
+2.2.  Senatori
+
+Structure for database: \ELECT96\TUR1_S.DBF
+Number of data records:   15119
+Date of last update   : 11/08/96
+Code Page             : 0
+Field  Field Name  Type       Width    Dec    Index  Collate
+    1  NCE         Numeric        8   Numar circumscriptie electorala (1-42)
+    2  NSV         Numeric        8   Numar sectie de votare (numar secvential
+                                       in cadrul judetului)
+    3  NCAS        Numeric        8   Numar candidati(partide,formatiuni,independenti)
+                                       in cadrul circumscriptiei electorale
+    4  A_SVD       Numeric        8   Numarul total al alegatorilor potrivit listelor
+                                       electorale permanente
+    5  AP_SVD      Numeric        8   Numarul total al alegatorilor care s-au
+                                       prezentat la urne
+    6  APP_SVD     Numeric        8   Numarul alegatorilor de pe listele electorale
+                                       permanente care s-au prezentat la urne
+    7  APS_SVD     Numeric        8   Numarul alegatorilor care s-au prezentat la urne
+                                       inscrisi pe listele electorale speciale
+    8  TVE_SV      Numeric        8   Numarul total al voturilor valabil exprimate
+    9  VN_SV       Numeric        8   Numarul total al voturilor nule
+   10  DENL        Character     40   Denumire localitate
+   11  TIPL        Character      1   Tip localitate :  M - municipiu
+                                                        O - oras
+                                                        C - comuna
+   12  ZONA        Numeric        2   Zona(regiunea statistica) (1-8)
+   13  CODL        Numeric        3   Cod localitate(numar secvential in cadrul
+                                       judetului)
+   14  P1          Numeric       10   Numar voturi valabil exprimate pentru partidele
+                                       P1.....P95 (P1...P95 conform Codu din
+                                       NOMUNIC.DBF)
+   15  P2          Numeric       10
+   16  P3          Numeric       10
+   17  P4          Numeric       10
+   18  P5          Numeric       10
+   19  P6          Numeric       10
+   20  P7          Numeric       10
+   21  P8          Numeric       10
+   22  P9          Numeric       10
+   23  P10         Numeric       10
+   24  P11         Numeric       10
+   25  P12         Numeric       10                  
+   26  P13         Numeric       10
+   27  P14         Numeric       10
+   28  P15         Numeric       10
+   29  P16         Numeric       10                  
+   30  P17         Numeric       10
+   31  P18         Numeric       10                  
+   32  P19         Numeric       10                  
+   33  P20         Numeric       10                  
+   34  P21         Numeric       10                  
+   35  P22         Numeric       10
+   36  P23         Numeric       10                  
+   37  P24         Numeric       10                  
+   38  P25         Numeric       10                  
+   39  P26         Numeric       10                  
+   40  P27         Numeric       10                  
+   41  P28         Numeric       10                  
+   42  P29         Numeric       10                  
+   43  P30         Numeric       10
+   44  P31         Numeric       10
+   45  P32         Numeric       10
+   46  P33         Numeric       10                  
+   47  P34         Numeric       10
+   48  P35         Numeric       10                  
+   49  P36         Numeric       10                  
+   50  P37         Numeric       10                  
+   51  P38         Numeric       10                  
+   52  P39         Numeric       10
+   53  P40         Numeric       10                  
+   54  P41         Numeric       10                  
+   55  P42         Numeric       10                  
+   56  P43         Numeric       10                  
+   57  P44         Numeric       10                  
+   58  P45         Numeric       10                  
+   59  P46         Numeric       10                  
+   60  P47         Numeric       10
+   61  P48         Numeric       10
+   62  P49         Numeric       10
+   63  P50         Numeric       10                  
+   64  P51         Numeric       10
+   65  P52         Numeric       10                  
+   66  P53         Numeric       10                  
+   67  P54         Numeric       10                  
+   68  P55         Numeric       10                  
+   69  P56         Numeric       10
+   70  P57         Numeric       10                  
+   71  P58         Numeric       10                  
+   72  P59         Numeric       10                  
+   73  P60         Numeric       10                  
+   74  P61         Numeric       10                  
+   75  P62         Numeric       10                  
+   76  P63         Numeric       10                  
+   77  P64         Numeric       10
+   78  P65         Numeric       10
+   79  P66         Numeric       10
+   80  P67         Numeric       10                  
+   81  P68         Numeric       10
+   82  P69         Numeric       10                  
+   83  P70         Numeric       10                  
+   84  P71         Numeric       10                  
+   85  P72         Numeric       10                  
+   86  P73         Numeric       10
+   87  P74         Numeric       10                  
+   88  P75         Numeric       10                  
+   89  P76         Numeric       10                  
+   90  P77         Numeric       10                  
+   91  P78         Numeric       10                  
+   92  P79         Numeric       10                  
+   93  P80         Numeric       10                  
+   94  P81         Numeric       10
+   95  P82         Numeric       10
+   96  P83         Numeric       10
+   97  P84         Numeric       10                  
+   98  P85         Numeric       10
+   99  P86         Numeric       10                  
+  100  P87         Numeric       10                  
+  101  P88         Numeric       10                  
+  102  P89         Numeric       10                  
+  103  P90         Numeric       10
+  104  P91         Numeric       10                  
+  105  P92         Numeric       10                  
+  106  P93         Numeric       10                  
+  107  P94         Numeric       10                  
+  108  P95         Numeric       10                  
+** Total **                    1069
+
+2.3.  Presedinte turul 1
+
+Structure for database: \ELECT96\TUR1_P1.DBF
+Number of data records:   15119
+Date of last update   : 11/19/96
+Code Page             : 0
+Field  Field Name  Type       Width    Dec    Index  Collate
+    1  NCE         Numeric        8   Numar circumscriptie electorala (1-42)
+    2  NSV         Numeric        8   Numar sectie de votare (numar secvential
+                                       in cadrul judetului)
+    3  NCAS        Numeric        8   Numar candidati(partide,formatiuni,independenti)
+                                       in cadrul circumscriptiei electorale
+    4  A_SVD       Numeric        8   Numarul total al alegatorilor potrivit listelor
+                                       electorale permanente
+    5  AP_SVD      Numeric        8   Numarul total al alegatorilor care s-au
+                                       prezentat la urne
+    6  APP_SVD     Numeric        8   Numarul alegatorilor de pe listele electorale
+                                       permanente care s-au prezentat la urne
+    7  APS_SVD     Numeric        8   Numarul alegatorilor care s-au prezentat la urne
+                                       inscrisi pe listele electorale speciale
+    8  TVE_SV      Numeric        8   Numarul total al voturilor valabil exprimate
+    9  VN_SV       Numeric        8   Numarul total al voturilor nule
+   10  DENL        Character     40   Denumire localitate
+   11  TIPL        Character      1   Tip localitate :  M - municipiu
+                                                        O - oras
+                                                        C - comuna
+   12  ZONA        Numeric        2   Zona(regiunea statistica) (1-8)
+   13  CODL        Numeric        3   Cod localitate(numar secvential in cadrul
+                                       judetului)
+   14  P1          Numeric       10   Numar voturi valabil exprimate pentru candidatii
+                                       P1.....P16 (P1...P16 conform Cod din
+                                       PRES1.DBF)
+   15  P2          Numeric       10
+   16  P3          Numeric       10
+   17  P4          Numeric       10
+   18  P5          Numeric       10
+   19  P6          Numeric       10
+   20  P7          Numeric       10
+   21  P8          Numeric       10
+   22  P9          Numeric       10
+   23  P10         Numeric       10
+   24  P11         Numeric       10
+   25  P12         Numeric       10
+   26  P13         Numeric       10
+   27  P14         Numeric       10
+   28  P15         Numeric       10
+   29  P16         Numeric       10
+** Total **                     279
+
+2.4.  Presedinte turul 2
+
+Structure for database: \ELECT96\TUR2_P2.DBF
+Number of data records:   15119
+Date of last update   : 11/19/96
+Code Page             : 0
+Field  Field Name  Type       Width    Dec    Index  Collate
+    1  NCE         Numeric        8   Numar circumscriptie electorala (1-42)
+    2  NSV         Numeric        8   Numar sectie de votare (numar secvential
+                                       in cadrul judetului)
+    3  NCAS        Numeric        8   Numar candidati(partide,formatiuni,independenti)
+                                       in cadrul circumscriptiei electorale
+    4  A_SVD       Numeric        8   Numarul total al alegatorilor potrivit listelor
+                                       electorale permanente
+    5  AP_SVD      Numeric        8   Numarul total al alegatorilor care s-au
+                                       prezentat la urne
+    6  APP_SVD     Numeric        8   Numarul alegatorilor de pe listele electorale
+                                       permanente care s-au prezentat la urne
+    7  APS_SVD     Numeric        8   Numarul alegatorilor care s-au prezentat la urne
+                                       inscrisi pe listele electorale speciale
+    8  TVE_SV      Numeric        8   Numarul total al voturilor valabil exprimate
+    9  VN_SV       Numeric        8   Numarul total al voturilor nule
+   10  DENL        Character     40   Denumire localitate
+   11  TIPL        Character      1   Tip localitate :  M - municipiu
+                                                        O - oras
+                                                        C - comuna
+   12  ZONA        Numeric        2   Zona(regiunea statistica) (1-8)
+   13  CODL        Numeric        3   Cod localitate(numar secvential in cadrul
+                                       judetului)
+   14  ION         Numeric       10   Numar voturi Ion Iliescu
+   15  EMIL        Numeric       10   Numar voturi Emil Constantinescu
+** Total **                     139
+
+2.5. Nomenclator presedinte turul 1
+
+Structure for database: H:\ELECT96\PRES1.DBF
+Number of data records:      16
+Date of last update   : 11/19/96
+Code Page             : 0
+Field  Field Name  Type       Width    Dec    Index  Collate
+    1  COD         Numeric        5   Cod candidat
+    2  NUME        Character     40   Nume si prenume candidat
+    3  DENP        Character     20   Denumire formatiune politica pe care o reprezinta
+                                       candidatul
+** Total **                      66
+
+2.6. Nomenclator partide deputati si senatori
+
+Structure for database: \ELECT96\NOMUNIC.DBF
+Number of data records:      80
+Date of last update   : 11/10/96
+Code Page             : 0
+Field  Field Name  Type       Width    Dec    Index  Collate
+    1  CODU        Numeric        3   Cod unic partid,formatiune politica, alianta
+    2  DENL        Character     80   Denumire lunga partid, formatiune politica, alianta
+    3  DENI        Character     20   Initiale partid, formatiune politica, alianta
+    4  DENS        Character     45   Denumire scurta partid, formatiune politica, alianta
+    5  PRAG        Numeric        1   Prag electoral
+    6  CODM        Numeric        2
+    7  TNC         Numeric        3
+    8  CODAL       Numeric        3
+    9  SIGLA       Numeric        3
+** Total **                     161
+
+ Fisierele pot fi deschise in Fox-Pro sau in Excel (utilizand extensia .dbf) 

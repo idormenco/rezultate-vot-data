@@ -1,0 +1,46 @@
+
+  Structura fisierului cd.dbf,s.dbf,p1.dbf
+
+   Field   Field Name     Type           Width
+       1   NCE            Numeric      	     2      numar circumscriptie electorala
+       2   NUME_CE        Character         25      denumire circ.electorala
+       3   NSV            Numeric            6      numar sectie de votare
+       4   SVSPEC         Numeric            1      marcare sectii de votare speciale
+                                                    1- din tara
+                                                    2- din strainatate
+       5   ADRESA         Character        128      adresa sectiei de votare
+       6   NUME_L         Character         50 	    denumire localitate
+       7   COD_L          Numeric            3      cod localitate
+       8   SIRUTA         Numeric            6      cod SIRUTA localitate (comuna)
+       9   TIP_L          Numeric            1      tip localitate (1=municipii,2=orase,0=comune)
+      10   MEDIU_L        Numeric            1      mediu localitate (1=urban,2=rural)
+      11   A_SV           Numeric           10      numar alegatori inscrisi in listele
+                                                     electorale permanente
+      12   AP_SV          Numeric           10      numar alegatori prezenti la vot
+      13   APP_SV         Numeric           10      numar alegatori prezenti la vot inscrisi
+                                                     in listele permanente
+      14   APS_SV         Numeric           10      numar alegatori prezenti la vot inscrisi
+                                                     in listele speciale
+      15   TVE_SV         Numeric           10      total voturi valabil exprimate
+      16   VN_SV          Numeric           10      total voturi nule
+      17   BVP_SV         Numeric           10      numar buletine de vot primite
+      18   BVRN_SV        Numeric           10      numar buletine de vot neintrebuintate
+
+      19   P01
+      20   P02  ....  P91
+           Voturile valabil exprimate de partide si aliante (in ordinea data
+        de CODU din NOMUNIC.DBF). 
+           La p1.dbf  p1... la p12 voturile valabil exprimate pentru candidatii la 
+        presedintele Romaniei PRES.DBF.
+
+   Structura fisierului NOMUNIC.DBF
+
+   Field   Field Name     Type           Width
+       1   CODU           Numeric            3		cod partid
+       2   DENL           Character        150		denumire partid
+       3   PRAG           Numeric            2		prag electoral
+       4   CODM           Numeric            2		cod minoritate
+       5   CODAL          Numeric            2		cod alianta
+
+
+ Fisierele pot fi deschise in Fox-Pro sau in Excel (utilizand extensia .dbf)

@@ -1,0 +1,82 @@
+Fișierul pv_PRSD_FINAL_tur1.csv
+
+a = numărul total al alegătorilor prevăzut în lista electorală permanentă existentă în secția de votare
+b = numărul total al alegătorilor care s-au prezentat la urne
+b1 = numărul total al alegătorlor care s-au prezentat la urne, înscriși în lista electorală permanentă
+b2 = numărul total al alegătorilor care s-au prezentat la urne și nu sunt cuprinși în lista electorală permanentă, înscriși în lista electorală suplimentară
+b3 = numărul total al alegătorilor care au votat utilizând urna specială, înscriși în extrasul din listele electorale
+c = numărul total al voturilor valabil exprimate
+d = numărul voturilor nule
+e = numărul buletinelor de vot primite
+f = numărul buletinelor de vot neântrbuințate și anulate
+g1 = Klaus-Werner Iohannis
+g2 = Theodor Paleologu
+g3 = Ilie-Dan Barna
+g4 = Hunor Kelemen
+g5 = Vasilica-Viorica Dancilă
+g6 = Cătălin-Sorin Ivan
+g7 = Ninel Peia
+g8 = Sebastian-Constantin Popescu
+g9 = John-Ion Banu
+g10 = Mircea Diaconu
+g11 = Bogdan-Dragoș-Aureliu Marian-Stanoevici
+g12 = Ramona-Ioana Bruynseels
+g13 = Vioerl Cataramă
+g14 = Alexandru Cumpănașu
+
+Fișierul pv_SR_PRSD-C_FINAL_tur1.csv
+
+a = numărul total al alegătorilor înscriși în lista electorală permanentă pentru votul prin corespondență
+b = numărul total al plicurilor exterioare primite de la alegatori
+b1 = numărul total al plicurilor exterioare valabile
+b2 = numărul total al plicurilor exterioare nule
+c = numărul total al plicurilor interioare
+c1 = numărul plicurilor interioare valabile
+c2 = numărul plicurilor interioare nule
+d = numărul total al voturilor
+d1 = numărul voturilor valabil exprimate
+d2 = numărul voturilor nule
+e1 = Klaus-Werner Iohannis
+e2 = Theodor Paleologu
+e3 = Ilie-Dan Barna
+e4 = Hunor Kelemen
+e5 = Vasilica-Viorica Dancilă
+e6 = Cătălin-Sorin Ivan
+e7 = Ninel Peia
+e8 = Sebastian-Constantin Popescu
+e9 = John-Ion Banu
+e10 = Mircea Diaconu
+e11 = Bogdan-Dragoș-Aureliu Marian-Stanoevici
+e12 = Ramona-Ioana Bruynseels
+e13 = Vioerl Cataramă
+e14 = Alexandru Cumpănașu
+
+
+Fișierul pv_PRSD_FINAL_tur2.csv
+
+a = numărul total al alegătorilor prevăzut în lista electorală permanentă existentă în secția de votare
+b = numărul total al alegătorilor care s-au prezentat la urne
+b1 = numărul total al alegătorlor care s-au prezentat la urne, înscriși în lista electorală permanentă
+b2 = numărul total al alegătorilor care s-au prezentat la urne și nu sunt cuprinși în lista electorală permanentă, înscriși în lista electorală suplimentară
+b3 = numărul total al alegătorilor care au votat utilizând urna specială, înscriși în extrasul din listele electorale
+c = numărul total al voturilor valabil exprimate
+d = numărul voturilor nule
+e = numărul buletinelor de vot primite
+f = numărul buletinelor de vot neântrbuințate și anulate
+g1 = Klaus-Werner Iohannis
+g2 = Vasilica-Viorica Dancilă
+
+Fișierul pv_SR_PRSD-C_FINAL_tur2.csv
+
+a = numărul total al alegătorilor înscriși în lista electorală permanentă pentru votul prin corespondență
+b = numărul total al plicurilor exterioare primite de la alegatori
+b1 = numărul total al plicurilor exterioare valabile
+b2 = numărul total al plicurilor exterioare nule
+c = numărul total al plicurilor interioare
+c1 = numărul plicurilor interioare valabile
+c2 = numărul plicurilor interioare nule
+d = numărul total al voturilor
+d1 = numărul voturilor valabil exprimate
+d2 = numărul voturilor nule
+e1 = Klaus-Werner Iohannis
+e2 = Vasilica-Viorica Dancilă

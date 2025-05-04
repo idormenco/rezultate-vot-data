@@ -1,0 +1,123 @@
+
+ 
+   Structura fisierului XNOMUNIC.DBF
+
+   Field   Field Name     Type           Width
+       1   CODU           Numeric            3		cod unic de partid
+       2   CODAL          Numeric            2      cod alianta
+       3   CODM           Numeric            2      cod minoritate (conform
+                                                    XMINORIT.DBF)       
+       4   PRAG           Numeric            1      prrag electoral
+       5   DENI           Character         20      denumire scurta partid
+       6   DENL           Character         80		denumire partid
+     
+   Structura fisierului XMINORIT.DBF
+   
+   Field   Field Name     Type           Width  
+       1   CODM           Numeric            2      cod minoritate  
+       2   DENM           Character         25      denumire minoritate
+        
+   Structura fisierului XPRES1.DBF
+   
+   Field   Field Name     Type           Width
+       1   LOC            Numeric            2      pozitia pe buletinul de vot
+       2   NUME           Character         28      numele candidatului
+       3   PARTID         Character         20      denumire partid
+       4   CODU           Numeric            3      cod unic de partid (conform
+                                                    XNOMUNIC.DBF)   
+             
+   Structura fisierului XCIRC.DBF
+
+   Field   Field Name     Type           Width
+       1   NCE            Numeric            2          numar circusmcriptie electorala
+       2   NUME_CE        Character         30          denumire circusmcriptie electorala
+       3   NTSV           Numeric            5          numar sectie de votare
+       4   SUMSV          Numeric            5          numar sectii de votare centralizate
+       5   NSVA           Numeric            2          numar sectii de votare anulate
+       6   MAN_CD         Numeric            2          numar mandate de deputati
+       7   NCAS_CD        Numeric            2          numar pozitii pe buletinul de vot
+                                                        deputati
+       8   MAN_S          Numeric            2          numar mandate de senatori
+       9   NCAS_S         Numeric            2          numar pozitii pe buletinul de vot
+                                                        senatori
+      10   NCAS_P         Numeric            2          numar pozitii pe buletinul de vot
+                                                        presedinte tur 1
+
+   Structura fisierului XCANDID.DBF
+
+   Field   Field Name     Type           Width
+       1   NCE            Numeric            2          numar circusmcriptie electorala
+       2   TIPPV          Numeric            1          tip proces verbal:
+                                                         1 = senatori (S)
+                                                         2 = deputati (CD)
+                                                         0 = presedinte (P)
+       3   CODU           Numeric            3          cod unic de partid (conform
+                                                        XNOMUNIC.DBF)
+       4   LOC            Numeric            3          locul(pozitia) in lista partidului
+       5   NUME           Character        100          numele candidatului
+       6   SEX            Numeric            1          sexul candidatului:
+                                                         1 = masculin
+                                                         2 = feminin
+       7   CODPP          Numeric            3          cod partid component alianta
+       8   VARSTA         Numeric            2          varsta candidatului
+ 
+   Structura fisierului XTRAGS.DBF
+
+   Field   Field Name     Type           Width
+       1   NCE            Numeric            2      numar circumscriptie electorala
+       2   NORD           Numeric            3      pozitia in buletinul de vot
+       3   TIPPV          Numeric            1          tip proces verbal:
+                                                        1 = senatori (S)
+                                                        2 = deputati (CD)
+       4   CODU           Numeric            3      cod unic de partid (conform
+                                                    XNOMUNIC.DBF)
+
+   Structura fisierului XCD.DBF, XS.DBF, XP1.dbf, xp2.dbf
+
+   Field   Field Name     Type           Width
+       1   NCE            Numeric      	     2      numar circumscriptie electorala
+       2   NUME_CE        Character         25      denumire circumscriptie electorala
+       3   NSV            Numeric            6      numar sectie de votare
+       4   SVSPEC         Numeric            1      marcare sectii de votare speciale
+                                                     1- din tara
+                                                     2- din strainatate
+       5   ADRESA         Character        128      adresa sectiei de votare
+       6   NUME_L         Character         50 	    denumire localitate
+       7   SIRUTA         Numeric            6      cod SIRUTA localitate (comuna)
+       8   TIP_L          Numeric            1      tip localitate:
+                                                     M = municipii
+                                                     O = orase
+                                                     C = comune
+       9   MEDIU_L        Numeric            1      mediu localitate:
+                                                     1=urban
+                                                     2=rural
+      10   A_SVD          Numeric           10      numar alegatori inscrisi in copia de pe
+                                                     lista electorala permanenta si in listele
+                                                     electorale speciale de tip 1
+      11   AIP_SVD        Numeric           10      numar alegatori inscrisi in copia de pe
+                                                     lista electorala permanenta
+      12   AIS_SVD        Numeric           10      numar alegatori inscrisi in listele electorale
+                                                     speciale de tip 1  
+      13   AP_SVD         Numeric           10      numar alegatori prezenti la vot
+      14   APP_SV         Numeric           10      numar alegatori prezenti la vot inscrisi
+                                                     in copia de pe lista electorala permanenta
+      15   APS1_SV        Numeric           10      numar alegatori prezenti la vot inscrisi
+                                                     in listele speciale de tip 1
+      16   APS2_SV        Numeric           10      numar alegatori prezenti la vot inscrisi
+                                                     in listele speciale de tip 2
+      17   TVE_SV         Numeric           10      total voturi valabil exprimate
+      18   VN_SV          Numeric           10      total voturi nule
+      19   BVP_SV         Numeric           10      numar buletine de vot primite
+      20   BVN_SV         Numeric           10      numar buletine de vot neintrebuintate
+
+      21   P1
+      22   P2  ....  P65
+           Voturile valabil exprimate de partide si aliante (in ordinea data
+        de CODU din XNOMUNIC.DBF). 
+           La xp1.dbf  p1... la p12 voturile valabil exprimate
+        pentru candidatii la presedintele Romaniei corespunzator XPRES1.DBF.
+           La xp2.dbf  p1,p2 voturile valabil exprimate
+        pentru candidatii la presedintele Romaniei corespunzator XPRES2.DBF.
+     
+      Observatie:
+      - fisierele sunt accesibile in FOX-PRO sau EXCEL (se va deschide fisierul cu extensia .dbf) 
