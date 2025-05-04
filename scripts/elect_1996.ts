@@ -1,0 +1,500 @@
+import chalk from "chalk";
+import { stringify } from "csv-stringify/sync";
+import { promises as fs } from "fs";
+import Papa from "papaparse";
+import { RecordsData, toSqlValue, TurnoutData, VotesData } from "./utils";
+
+interface CandidatPrezidentiale {
+  COD: number;
+  NUME: string;
+  DENP: string;
+}
+
+interface PVData {
+  NCE: number;
+  County: string;
+  CountyId: number;
+  LocalityKey: string;
+  LocalityId: number;
+  NSV: number;
+  NCAS: number;
+  A_SVD: number;
+  AP_SVD: number;
+  APP_SVD: number;
+  APS_SVD: number;
+  TVE_SV: number;
+  VN_SV: number;
+  DENL: string;
+  TIPL: string;
+  ZONA: number;
+  CODL: number;
+  P1: number;
+  P2: number;
+  P3: number;
+  P4: number;
+  P5: number;
+  P6: number;
+  P7: number;
+  P8: number;
+  P9: number;
+  P10: number;
+  P11: number;
+  P12: number;
+  P13: number;
+  P14: number;
+  P15: number;
+  P16: number;
+
+  // Round 2 has this columns ....
+  ION: number;
+  EMIL: number;
+}
+
+const COLOR = "#000000";
+
+async function getPartiesLookup(
+  electionId: number,
+  candidates: CandidatPrezidentiale[]
+) {
+  const partyVarNames = new Map<string, string>();
+
+  const partyInserts = candidates.map((party, index) => {
+    const varName = `@party_${index}`;
+    partyVarNames.set(party.DENP, varName);
+
+    return `INSERT INTO \`rezultatevot\`.\`parties\` (
+          \`name\`,
+          \`acronym\`,
+          \`color\`,
+          \`election_id\`,
+          \`created_at\`,
+          \`updated_at\`
+        ) VALUES (
+          ${toSqlValue(party.DENP)},
+          ${toSqlValue(party.DENP)},
+          ${toSqlValue(COLOR)},
+          ${electionId},
+          NOW(),
+          NOW());
+          SET ${varName} = LAST_INSERT_ID();`;
+  });
+
+  return {
+    partyInserts,
+    partyVarNames,
+  };
+}
+
+function getCandidatesLookup(
+  electionId: number,
+  partyVarNames: Map<string, string>,
+  candidates: CandidatPrezidentiale[],
+  resultsAccessorFn?: (name: string) => string
+) {
+  const candidatesVarLookup = new Map<
+    string,
+    { varName: string; resultsAccessorFn: (name: string) => string }
+  >();
+
+  const candidateInserts = candidates.map((candidat, index) => {
+    const varName = `@candidat_${index + 1}`;
+    candidatesVarLookup.set(candidat.NUME.trim(), {
+      varName,
+      resultsAccessorFn: resultsAccessorFn
+        ? resultsAccessorFn
+        : (name: string) => `P${candidat.COD}`,
+    });
+    const partyVar = partyVarNames.get(candidat.DENP.trim());
+
+    return `INSERT INTO \`rezultatevot\`.\`candidates\`(
+        \`name\`,
+        \`display_name\`,
+        \`color\`,
+        \`election_id\`,
+        \`party_id\`,
+        \`created_at\`,
+        \`updated_at\`
+      )VALUES (
+        ${toSqlValue(candidat.NUME)},
+        NULL,
+        "#808080",
+        ${electionId},
+        ${partyVar},
+        NOW(),
+        NOW());
+       SET ${varName} = LAST_INSERT_ID();`;
+  });
+
+  return { candidateInserts, candidatesVarLookup };
+}
+
+async function parseCandidatesNomenclator(file: string) {
+  const rawCandidates = await fs.readFile(file, "utf-8");
+
+  const parsedCandidates = Papa.parse<CandidatPrezidentiale>(rawCandidates, {
+    header: true,
+    skipEmptyLines: true,
+    delimiter: ",",
+    dynamicTyping: true,
+  });
+
+  return parsedCandidates.data;
+}
+
+async function parseResults(
+  electionId: number,
+  file: string,
+  candidatesLookup: Map<
+    string,
+    { varName: string; resultsAccessorFn: (name: string) => string }
+  >
+) {
+  const rawData = await fs.readFile(file, "utf-8");
+
+  const parsedData = Papa.parse<PVData>(rawData, {
+    header: true,
+    skipEmptyLines: true,
+    delimiter: ",",
+    dynamicTyping: true,
+  });
+
+  const votesInserts: string[] = [];
+  const votesData: VotesData[] = [];
+
+  const turnoutsInserts: string[] = [];
+  const turnoutsData: TurnoutData[] = [];
+
+  const recordsInserts: string[] = [];
+  const recordsData: RecordsData[] = [];
+
+  for (var data of parsedData.data) {
+    for (var [candidate, { varName, resultsAccessorFn }] of candidatesLookup) {
+      const votesInsert = `INSERT INTO \`rezultatevot\`.\`votes\` (
+          \`election_id\`,
+          \`country_id\`,
+          \`county_id\`,
+          \`locality_id\`,
+          \`section\`,
+          \`part\`,
+          \`votable_type\`,
+          \`votable_id\`,
+          \`votes\`
+          ) VALUES (
+          ${electionId},
+          NULL,
+          ${data.CountyId},
+          ${data.LocalityId},
+          ${data.NSV},
+          0,
+          \`candidate\`,
+          ${varName},
+          ${data[resultsAccessorFn(candidate)]});`;
+
+      votesInserts.push(votesInsert);
+      votesData.push({
+        election_id: electionId,
+        country_id: null,
+        county_id: data.CountyId,
+        locality_id: data.LocalityId,
+        part: 0,
+        section: data.NSV,
+        votable_id: varName,
+        votable_type: "candidate",
+        votes: data[resultsAccessorFn(candidate)],
+      });
+    }
+
+    const turnoutsInsert = `INSERT INTO \`rezultatevot\`.\`turnouts\` (
+      \`has_issues\`,
+      \`election_id\`,
+      \`country_id\`,
+      \`county_id\`,
+      \`locality_id\`,
+      \`section\`,
+      \`initial_permanent\`,
+      \`initial_complement\`,
+      \`permanent\`,
+      \`complement\`,
+      \`supplement\`,
+      \`mobile\`,
+      \`initial_total\`,
+      \`total\`,
+      \`percent\`,
+      \`area\`,
+      \`men_18-24\`,
+      \`men_25-34\`,
+      \`men_35-44\`,
+      \`men_45-64\`,
+      \`men_65\`,
+      \`women_18-24\`,
+      \`women_25-34\`,
+      \`women_35-44\`,
+      \`women_45-64\`,
+      \`women_65\`
+    ) VALUES (
+      1,
+      ${electionId},
+      NULL,
+      ${data.CountyId},
+      ${data.LocalityId},
+      ${data.NSV},
+      ${data.A_SVD},
+      0,
+      ${data.APP_SVD},
+      0,
+      ${data.APS_SVD},
+      0,
+      ${data.A_SVD},
+      ${data.TVE_SV},
+      ${((data.TVE_SV / data.A_SVD) * 100).toFixed(2)},
+      'U',
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0
+    );`;
+
+    turnoutsInserts.push(turnoutsInsert);
+    turnoutsData.push({
+      has_issues: 1,
+      election_id: electionId,
+      country_id: null,
+      county_id: data.CountyId,
+      locality_id: data.LocalityId,
+      section: data.NSV,
+      initial_permanent: data.A_SVD,
+      initial_complement: 0,
+      permanent: data.APP_SVD,
+      complement: 0,
+      supplement: data.APS_SVD,
+      mobile: 0,
+      initial_total: data.A_SVD,
+      total: data.TVE_SV,
+      percent: parseFloat(((data.TVE_SV / data.A_SVD) * 100).toFixed(2)),
+      area: "U",
+      men_18_24: 0,
+      men_25_34: 0,
+      men_35_44: 0,
+      men_45_64: 0,
+      men_65: 0,
+      women_18_24: 0,
+      women_25_34: 0,
+      women_35_44: 0,
+      women_45_64: 0,
+      women_65: 0,
+    });
+
+    recordsInserts.push(`
+      INSERT INTO \`rezultatevot\`.\`records\` (
+        \`has_issues\`,
+        \`election_id\`,
+        \`country_id\`,
+        \`county_id\`,
+        \`locality_id\`,
+        \`section\`,
+        \`part\`,
+        \`eligible_voters_total\`,
+        \`eligible_voters_permanent\`,
+        \`eligible_voters_special\`,
+        \`present_voters_total\`,
+        \`present_voters_permanent\`,
+        \`present_voters_special\`,
+        \`present_voters_supliment\`,
+        \`papers_received\`,
+        \`papers_unused\`,
+        \`votes_valid\`,
+        \`votes_null\`,
+        \`present_voters_mail\`
+      ) VALUES (
+        0,
+        ${electionId},
+        NULL,
+        ${data.CountyId},
+        ${data.LocalityId},
+        ${data.NSV},
+        0,
+        ${data.A_SVD},
+        ${data.A_SVD},
+        0,
+        ${data.AP_SVD},
+        ${data.APP_SVD},
+        ${data.APS_SVD},
+        0,
+        0,
+        0,
+        ${data.TVE_SV},
+        ${data.VN_SV},
+        0);
+  `);
+    recordsData.push({
+      has_issues: 0,
+      election_id: electionId,
+      country_id: null,
+      county_id: data.CountyId,
+      locality_id: data.LocalityId,
+      section: 1,
+      part: 0,
+      eligible_voters_total: data.A_SVD,
+      eligible_voters_permanent: data.A_SVD,
+      eligible_voters_special: 0,
+      present_voters_total: data.AP_SVD,
+      present_voters_permanent: data.APP_SVD,
+      present_voters_special: data.APS_SVD,
+      present_voters_supliment: 0,
+      papers_received: 0,
+      papers_unused: 0,
+      votes_valid: data.TVE_SV,
+      votes_null: data.VN_SV,
+      present_voters_mail: 0,
+    });
+  }
+  return {
+    votesInserts,
+    votesData,
+    turnoutsInserts,
+    turnoutsData,
+    recordsInserts,
+    recordsData,
+  };
+}
+
+async function processTur1Data() {
+  const ROUND_ONE_ID = 14;
+
+  const candidatesTur1 = await parseCandidatesNomenclator(
+    "./data/elect_1996/PRES1.csv"
+  );
+
+  const {
+    partyInserts: partyInsertsRound1,
+    partyVarNames: partyVarNamesRound1,
+  } = await getPartiesLookup(ROUND_ONE_ID, candidatesTur1);
+
+  const {
+    candidateInserts: candidateInsertsRound1,
+    candidatesVarLookup: candidatesVarLookupRound1,
+  } = getCandidatesLookup(ROUND_ONE_ID, partyVarNamesRound1, candidatesTur1);
+
+  const {
+    votesInserts: votesInsertsTur1,
+    votesData: votesDataTur1,
+    turnoutsInserts: turnoutsInsertsTur1,
+    turnoutsData: turnoutsDataTur1,
+    recordsInserts: recordsInsertsTur1,
+    recordsData: recordsDataTur1,
+  } = await parseResults(
+    ROUND_ONE_ID,
+    "./data/elect_1996/TUR_P1_PROCESSED.csv",
+    candidatesVarLookupRound1
+  );
+
+  await fs.writeFile(
+    "data/elect_1996/round_1_data.sql",
+    [
+      ...partyInsertsRound1,
+      ...candidateInsertsRound1,
+      ...votesInsertsTur1,
+      ...turnoutsInsertsTur1,
+      ...recordsInsertsTur1,
+    ].join("\r\n"),
+    "utf8"
+  );
+
+  await fs.writeFile(
+    "data/elect_1996/tur_1_votes.csv",
+    stringify(votesDataTur1, { header: true }),
+    "utf8"
+  );
+  await fs.writeFile(
+    "data/elect_1996/tur_1_records.csv",
+    stringify(recordsDataTur1, { header: true }),
+    "utf8"
+  );
+  await fs.writeFile(
+    "data/elect_1996/tur_1_turnouts.csv",
+    stringify(turnoutsDataTur1, { header: true }),
+    "utf8"
+  );
+}
+
+async function processTur2Data() {
+  const ROUND_TWO_ID = 13;
+
+  const candidatesTur2 = await parseCandidatesNomenclator(
+    "./data/elect_1996/PRES2.csv"
+  );
+
+  const {
+    partyInserts: partyInsertsRound2,
+    partyVarNames: partyVarNamesRound2,
+  } = await getPartiesLookup(ROUND_TWO_ID, candidatesTur2);
+
+  const {
+    candidateInserts: candidateInsertsRound2,
+    candidatesVarLookup: candidatesVarLookupRound2,
+  } = getCandidatesLookup(
+    ROUND_TWO_ID,
+    partyVarNamesRound2,
+    candidatesTur2,
+    (name) => name.split(" ")[0]
+  );
+
+  const {
+    votesInserts: votesInsertsTur2,
+    votesData: votesDataTur2,
+    turnoutsInserts: turnoutsInsertsTur2,
+    turnoutsData: turnoutsDataTur2,
+    recordsInserts: recordsInsertsTur2,
+    recordsData: recordsDataTur2,
+  } = await parseResults(
+    ROUND_TWO_ID,
+    "./data/elect_1996/TUR_P2_PROCESSED.csv",
+    candidatesVarLookupRound2
+  );
+
+  await fs.writeFile(
+    "data/elect_1996/round_2_data.sql",
+    [
+      ...partyInsertsRound2,
+      ...candidateInsertsRound2,
+      ...votesInsertsTur2,
+      ...turnoutsInsertsTur2,
+      ...recordsInsertsTur2,
+    ].join("\r\n"),
+    "utf8"
+  );
+
+  await fs.writeFile(
+    "data/elect_1996/tur_2_votes.csv",
+    stringify(votesDataTur2, { header: true }),
+    "utf8"
+  );
+  await fs.writeFile(
+    "data/elect_1996/tur_2_records.csv",
+    stringify(recordsDataTur2, { header: true }),
+    "utf8"
+  );
+  await fs.writeFile(
+    "data/elect_1996/tur_2_turnouts.csv",
+    stringify(turnoutsDataTur2, { header: true }),
+    "utf8"
+  );
+}
+
+async function processElectionData() {
+  const start = Date.now();
+  await processTur1Data();
+  await processTur2Data();
+
+  const end = Date.now();
+
+  console.log(
+    chalk.green(`✅ Precessing completed in ${(end - start) / 1000}s`)
+  );
+
+  process.exit(0);
+}
+
+processElectionData().catch((err) => {
+  console.error(chalk.red("❌ Processing failed"));
+  console.error(err);
+  process.exit(1);
+});

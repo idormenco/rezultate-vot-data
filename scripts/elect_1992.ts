@@ -1,19 +1,14 @@
 import chalk from "chalk";
-import Papa from "papaparse";
 import { promises as fs } from "fs";
 import { groupBy } from "lodash-es";
+import Papa from "papaparse";
+import { RecordsData, toSqlValue, TurnoutData, VotesData } from "./utils";
+import { stringify } from "csv-stringify/sync";
+
 interface CandidatPrezidentiale {
   NR_CRT: number;
   NUME: string;
   PARTID: string;
-}
-
-interface PartyDetails {
-  COD_PARTID: number;
-  DEN_SCURTA: string;
-  DEN_LUNG_1: string;
-  DEN_LUNG_2: string;
-  DEN_LUNG_3: string;
 }
 
 interface PVData {
@@ -34,13 +29,6 @@ interface PVData {
   P6: number;
 }
 
-function toSqlValue(val: string | number): string {
-  return typeof val === "number"
-    ? `${val}`
-    : `'${val.replace(/'/g, "''").trim()}'`;
-}
-
-const ELECTION_ID = 3;
 const COLOR = "#000000";
 const countiesByCircId: Record<
   number,
@@ -135,43 +123,32 @@ const localitiesMap = {
   234: 180133, //name: "Judetul Ilfov" },
 };
 
-async function getPartiesLookup() {
+async function getPartiesLookup(
+  electionId: number,
+  candidates: CandidatPrezidentiale[]
+) {
   const partyVarNames = new Map<string, string>();
-  const rawPartiesData = await fs.readFile(
-    "data/elect_1992/NOMUNIC.csv",
-    "utf-8"
-  );
 
-  const parsedParties = Papa.parse<PartyDetails>(rawPartiesData, {
-    header: true,
-    skipEmptyLines: true,
-    delimiter: ",",
-    dynamicTyping: true,
+  const partyInserts = candidates.map((party, index) => {
+    const varName = `@party_${index}`;
+    partyVarNames.set(party.PARTID, varName);
+
+    return `INSERT INTO \`rezultatevot\`.\`parties\` (
+          \`name\`,
+          \`acronym\`,
+          \`color\`,
+          \`election_id\`,
+          \`created_at\`,
+          \`updated_at\`
+        ) VALUES (
+          ${toSqlValue(party.PARTID)},
+          ${toSqlValue(party.PARTID)},
+          ${toSqlValue(COLOR)},
+          ${electionId},
+          NOW(),
+          NOW());
+          SET ${varName} = LAST_INSERT_ID();`;
   });
-
-  const partyInserts = parsedParties.data
-    .map((p) => ({
-      shortName: p.DEN_SCURTA,
-      fullName: [
-        p.DEN_LUNG_1.trim(),
-        p.DEN_LUNG_2?.trim() ?? "",
-        p.DEN_LUNG_3?.trim() ?? "",
-      ]
-        .join(" ")
-        .trim(),
-    }))
-    .map((party, index) => {
-      const varName = `@party_${index}`;
-      partyVarNames.set(party.shortName, varName);
-
-      return (
-        `INSERT INTO \`rezultatevot\`.\`parties\` (\`name\`, \`acronym\`, \`color\`, \`election_id\`, \`created_at\`, \`updated_at\`)\n` +
-        `VALUES (${toSqlValue(party.shortName)}, ${toSqlValue(
-          party.fullName
-        )}, '${COLOR}', ${ELECTION_ID}, NOW(), NOW());\n` +
-        `SET ${varName} = LAST_INSERT_ID();`
-      );
-    });
 
   return {
     partyInserts,
@@ -180,24 +157,40 @@ async function getPartiesLookup() {
 }
 
 function getCandidatesLookup(
+  electionId: number,
   partyVarNames: Map<string, string>,
   candidates: CandidatPrezidentiale[]
 ) {
-  const candidatesVarLookup = new Map<string, [string, number]>();
+  const candidatesVarLookup = new Map<
+    string,
+    { varName: string; resultsAccessorFn: (name: string) => string }
+  >();
 
   const candidateInserts = candidates.map((candidat, index) => {
     const varName = `@candidat_${index + 1}`;
-    candidatesVarLookup.set(candidat.NUME.trim(), [varName, candidat.NR_CRT]);
+    candidatesVarLookup.set(candidat.NUME.trim(), {
+      varName,
+      resultsAccessorFn: () => `P${candidat.NR_CRT}`,
+    });
+    const partyVar = partyVarNames.get(candidat.PARTID.trim());
 
-    return (
-      `INSERT INTO \`rezultatevot\`.\`candidates\`(\`name\`, \`display_name\`, \`color\`, \`election_id\`, \`party_id\`, \`created_at\`, \`updated_at\`)\n` +
-      `VALUES (${toSqlValue(candidat.NUME)}, NULL, ${toSqlValue(
-        "#808080"
-      )}, ${ELECTION_ID}, ${partyVarNames.get(
-        candidat.PARTID.trim()
-      )}, NOW(), NOW());\n` +
-      `SET ${varName} = LAST_INSERT_ID();`
-    );
+    return `INSERT INTO \`rezultatevot\`.\`candidates\`(
+        \`name\`,
+        \`display_name\`,
+        \`color\`,
+        \`election_id\`,
+        \`party_id\`,
+        \`created_at\`,
+        \`updated_at\`
+      )VALUES (
+        ${toSqlValue(candidat.NUME)},
+        NULL,
+        "#808080",
+        ${electionId},
+        ${partyVar},
+        NOW(),
+        NOW());
+       SET ${varName} = LAST_INSERT_ID();`;
   });
 
   return { candidateInserts, candidatesVarLookup };
@@ -217,12 +210,16 @@ async function parseCandidatesNomenclator(file: string) {
 }
 
 async function parseResults(
+  electionId: number,
   file: string,
-  candidatesLookup: Map<string, [string, number]>
+  candidatesLookup: Map<
+    string,
+    { varName: string; resultsAccessorFn: (name: string) => string }
+  >
 ) {
-  const rawCandidates = await fs.readFile(file, "utf-8");
+  const rawData = await fs.readFile(file, "utf-8");
 
-  const parsedCandidates = Papa.parse<PVData>(rawCandidates, {
+  const parsedRawData = Papa.parse<PVData>(rawData, {
     header: true,
     skipEmptyLines: true,
     delimiter: ",",
@@ -230,11 +227,11 @@ async function parseResults(
   });
 
   const dataPerCounty = Object.entries(
-    groupBy(parsedCandidates.data, (r) => r.NR_CIRC)
+    groupBy(parsedRawData.data, (r) => r.NR_CIRC)
   ).map(([NR_CIRC, data]) => {
     return {
       countyId: countiesByCircId[+NR_CIRC].id,
-      values: data.reduce(
+      ...data.reduce(
         (prev, acc) => {
           return {
             A: acc.A + prev.A,
@@ -270,79 +267,351 @@ async function parseResults(
   });
 
   const votesInserts: string[] = [];
-  const votesData: {
-    election_id: number;
-    country_id: number | null;
-    county_id: number | null;
-    locality_id: number | null;
-    section: number;
-    part: number;
-    votable_type: string;
-    votable_id: string;
-    votes: number;
-  }[] = [];
+  const votesData: VotesData[] = [];
+
+  const turnoutsInserts: string[] = [];
+  const turnoutsData: TurnoutData[] = [];
+
+  const recordsInserts: string[] = [];
+  const recordsData: RecordsData[] = [];
+
   for (var countyData of dataPerCounty) {
-    for (var [candidate, [varName, ballotPosition]] of candidatesLookup) {
-      const votesInsert =
-        `INSERT INTO \`rezultatevot\`.\`votes\` (\`election_id\`, \`country_id\`, \`county_id\`, \`locality_id\`, \`section\`, \`part\`, \`votable_type\`, \`votable_id\`, \`votes\`)` +
-        `VALUES (${ELECTION_ID}, NULL, ${countyData.countyId}, ${
-          localitiesMap[countyData.countyId]
-        }, 1, 0, \`candidate\`, ${varName}, ${
-          countyData["P" + ballotPosition]
-        });`;
+    const localityId = localitiesMap[countyData.countyId];
+    for (var [candidate, { varName, resultsAccessorFn }] of candidatesLookup) {
+      const votesInsert = `INSERT INTO \`rezultatevot\`.\`votes\` (
+          \`election_id\`,
+          \`country_id\`,
+          \`county_id\`,
+          \`locality_id\`,
+          \`section\`,
+          \`part\`,
+          \`votable_type\`,
+          \`votable_id\`,
+          \`votes\`
+          ) VALUES (
+          ${electionId},
+          NULL,
+          ${countyData.countyId},
+          ${localityId},
+          1,
+          0,
+          \`candidate\`,
+          ${varName},
+          ${countyData[resultsAccessorFn(candidate)]});`;
 
       votesInserts.push(votesInsert);
       votesData.push({
-        election_id: ELECTION_ID,
+        election_id: electionId,
         country_id: null,
         county_id: countyData.countyId,
-        locality_id: localitiesMap[countyData.countyId],
+        locality_id: localityId,
         part: 0,
         section: 1,
         votable_id: varName,
         votable_type: "candidate",
-        votes: countyData["P" + ballotPosition],
+        votes: countyData[resultsAccessorFn(candidate)],
       });
     }
+
+    const turnoutsInsert = `INSERT INTO \`rezultatevot\`.\`turnouts\` (
+      \`has_issues\`,
+      \`election_id\`,
+      \`country_id\`,
+      \`county_id\`,
+      \`locality_id\`,
+      \`section\`,
+      \`initial_permanent\`,
+      \`initial_complement\`,
+      \`permanent\`,
+      \`complement\`,
+      \`supplement\`,
+      \`mobile\`,
+      \`initial_total\`,
+      \`total\`,
+      \`percent\`,
+      \`area\`,
+      \`men_18-24\`,
+      \`men_25-34\`,
+      \`men_35-44\`,
+      \`men_45-64\`,
+      \`men_65\`,
+      \`women_18-24\`,
+      \`women_25-34\`,
+      \`women_35-44\`,
+      \`women_45-64\`,
+      \`women_65\`
+    ) VALUES (
+      1,
+      ${electionId},
+      NULL,
+      ${countyData.countyId},
+      ${localityId},
+      1,
+      ${countyData.A},
+      0,
+      ${countyData.APP},
+      0,
+      ${countyData.APS},
+      0,
+      ${countyData.A},
+      ${countyData.TVE},
+      ${((countyData.TVE / countyData.A) * 100).toFixed(2)},
+      'U',
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0
+    );`;
+
+    turnoutsInserts.push(turnoutsInsert);
+    turnoutsData.push({
+      has_issues: 1,
+      election_id: electionId,
+      country_id: null,
+      county_id: countyData.countyId,
+      locality_id: localityId,
+      section: 1,
+      initial_permanent: countyData.A,
+      initial_complement: 0,
+      permanent: countyData.APP,
+      complement: 0,
+      supplement: countyData.APS,
+      mobile: 0,
+      initial_total: countyData.A,
+      total: countyData.TVE,
+      percent: parseFloat(((countyData.TVE / countyData.A) * 100).toFixed(2)),
+      area: "U",
+      men_18_24: 0,
+      men_25_34: 0,
+      men_35_44: 0,
+      men_45_64: 0,
+      men_65: 0,
+      women_18_24: 0,
+      women_25_34: 0,
+      women_35_44: 0,
+      women_45_64: 0,
+      women_65: 0,
+    });
+
+    recordsInserts.push(`
+      INSERT INTO \`rezultatevot\`.\`records\` (
+        \`has_issues\`,
+        \`election_id\`,
+        \`country_id\`,
+        \`county_id\`,
+        \`locality_id\`,
+        \`section\`,
+        \`part\`,
+        \`eligible_voters_total\`,
+        \`eligible_voters_permanent\`,
+        \`eligible_voters_special\`,
+        \`present_voters_total\`,
+        \`present_voters_permanent\`,
+        \`present_voters_special\`,
+        \`present_voters_supliment\`,
+        \`papers_received\`,
+        \`papers_unused\`,
+        \`votes_valid\`,
+        \`votes_null\`,
+        \`present_voters_mail\`
+      ) VALUES (
+        0,
+        ${electionId},
+        NULL,
+        ${countyData.countyId},
+        ${localityId},
+        1,
+        0,
+        ${countyData.A},
+        ${countyData.A},
+        0,
+        ${countyData.AP},
+        ${countyData.APP},
+        ${countyData.APS},
+        0,
+        0,
+        0,
+        ${countyData.TVE},
+        ${countyData.VN},
+        0);
+  `);
+    recordsData.push({
+      has_issues: 0,
+      election_id: electionId,
+      country_id: null,
+      county_id: countyData.countyId,
+      locality_id: localityId,
+      section: 1,
+      part: 0,
+      eligible_voters_total: countyData.A,
+      eligible_voters_permanent: countyData.A,
+      eligible_voters_special: 0,
+      present_voters_total: countyData.AP,
+      present_voters_permanent: countyData.APP,
+      present_voters_special: countyData.APS,
+      present_voters_supliment: 0,
+      papers_received: 0,
+      papers_unused: 0,
+      votes_valid: countyData.TVE,
+      votes_null: countyData.VN,
+      present_voters_mail: 0,
+    });
   }
-  return dataPerCounty;
+  return {
+    dataPerCounty,
+    votesInserts,
+    votesData,
+    turnoutsInserts,
+    turnoutsData,
+    recordsInserts,
+    recordsData,
+  };
 }
 
-async function processElectionData() {
-  const start = Date.now();
+async function processTur1Data() {
+  const ROUND_ONE_ID = 3;
+
   const candidatesTur1 = await parseCandidatesNomenclator(
     "./data/elect_1992/NOM_PRES.csv"
   );
 
-  const { partyInserts, partyVarNames } = await getPartiesLookup();
-  const { candidateInserts, candidatesVarLookup } = getCandidatesLookup(
-    partyVarNames,
-    candidatesTur1
+  const {
+    partyInserts: partyInsertsRound1,
+    partyVarNames: partyVarNamesRound1,
+  } = await getPartiesLookup(ROUND_ONE_ID, candidatesTur1);
+
+  const {
+    candidateInserts: candidateInsertsRound1,
+    candidatesVarLookup: candidatesVarLookupRound1,
+  } = getCandidatesLookup(ROUND_ONE_ID, partyVarNamesRound1, candidatesTur1);
+
+  const {
+    dataPerCounty: dataPerCountyTur1,
+    votesInserts: votesInsertsTur1,
+    votesData: votesDataTur1,
+    turnoutsInserts: turnoutsInsertsTur1,
+    turnoutsData: turnoutsDataTur1,
+    recordsInserts: recordsInsertsTur1,
+    recordsData: recordsDataTur1,
+  } = await parseResults(
+    ROUND_ONE_ID,
+    "./data/elect_1992/P1.csv",
+    candidatesVarLookupRound1
   );
 
-  // Subset of candidatesTur1 no need to generate inserts
+  await fs.writeFile(
+    "data/elect_1992/round_1_data.sql",
+    [
+      ...partyInsertsRound1,
+      ...candidateInsertsRound1,
+      ...votesInsertsTur1,
+      ...turnoutsInsertsTur1,
+      ...recordsInsertsTur1,
+    ].join("\r\n"),
+    "utf8"
+  );
+
+  await fs.writeFile(
+    "data/elect_1992/tur_1_data.csv",
+    stringify(dataPerCountyTur1, { header: true }),
+    "utf8"
+  );
+  await fs.writeFile(
+    "data/elect_1992/tur_1_votes.csv",
+    stringify(votesDataTur1, { header: true }),
+    "utf8"
+  );
+  await fs.writeFile(
+    "data/elect_1992/tur_1_records.csv",
+    stringify(recordsDataTur1, { header: true }),
+    "utf8"
+  );
+  await fs.writeFile(
+    "data/elect_1992/tur_1_turnouts.csv",
+    stringify(turnoutsDataTur1, { header: true }),
+    "utf8"
+  );
+}
+
+async function processTur2Data() {
+  const ROUND_TWO_ID = 2;
+
   const candidatesTur2 = await parseCandidatesNomenclator(
     "./data/elect_1992/NOM_P2.csv"
   );
 
-  const {} = await parseResults(
-    "./data/elect_1992/P1.csv",
-    candidatesVarLookup
-  );
-  const {} = await parseResults(
+  const {
+    partyInserts: partyInsertsRound2,
+    partyVarNames: partyVarNamesRound2,
+  } = await getPartiesLookup(ROUND_TWO_ID, candidatesTur2);
+
+  const {
+    candidateInserts: candidateInsertsRound2,
+    candidatesVarLookup: candidatesVarLookupRound2,
+  } = getCandidatesLookup(ROUND_TWO_ID, partyVarNamesRound2, candidatesTur2);
+
+  const {
+    dataPerCounty: dataPerCountyTur2,
+    votesInserts: votesInsertsTur2,
+    votesData: votesDataTur2,
+    turnoutsInserts: turnoutsInsertsTur2,
+    turnoutsData: turnoutsDataTur2,
+    recordsInserts: recordsInsertsTur2,
+    recordsData: recordsDataTur2,
+  } = await parseResults(
+    ROUND_TWO_ID,
     "./data/elect_1992/P2.csv",
-    candidatesVarLookup
+    candidatesVarLookupRound2
   );
+
+  await fs.writeFile(
+    "data/elect_1992/round_2_data.sql",
+    [
+      ...partyInsertsRound2,
+      ...candidateInsertsRound2,
+      ...votesInsertsTur2,
+      ...turnoutsInsertsTur2,
+      ...recordsInsertsTur2,
+    ].join("\r\n"),
+    "utf8"
+  );
+
+  await fs.writeFile(
+    "data/elect_1992/tur_2_data.csv",
+    stringify(dataPerCountyTur2, { header: true }),
+    "utf8"
+  );
+  await fs.writeFile(
+    "data/elect_1992/tur_2_votes.csv",
+    stringify(votesDataTur2, { header: true }),
+    "utf8"
+  );
+  await fs.writeFile(
+    "data/elect_1992/tur_2_records.csv",
+    stringify(recordsDataTur2, { header: true }),
+    "utf8"
+  );
+  await fs.writeFile(
+    "data/elect_1992/tur_2_turnouts.csv",
+    stringify(turnoutsDataTur2, { header: true }),
+    "utf8"
+  );
+}
+
+async function processElectionData() {
+  const start = Date.now();
+  await processTur1Data();
+  await processTur2Data();
+
   const end = Date.now();
+
   console.log(
-    chalk.green(`✅ Conversion completed in ${(end - start) / 1000}s`)
+    chalk.green(`✅ Precessing completed in ${(end - start) / 1000}s`)
   );
 
   process.exit(0);
 }
 
 processElectionData().catch((err) => {
-  console.error(chalk.red("❌ Conversion failed"));
+  console.error(chalk.red("❌ Processing failed"));
   console.error(err);
   process.exit(1);
 });
