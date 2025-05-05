@@ -7,7 +7,9 @@
     "dbf-to-csv": "tsx scripts/dbf-to-csv.ts",
     "elect_1992": "tsx scripts/elect_1992.ts",
     "elect_1996": "tsx scripts/elect_1996.ts",
-    "elect_2000": "tsx scripts/elect_2000.ts"
+    "elect_2000": "tsx scripts/elect_2000.ts",
+    "elect_2004": "tsx scripts/elect_2004.ts",
+    "prez_2009": "tsx scripts/prez_2009.ts"
   },
   "keywords": [],
   "author": "",

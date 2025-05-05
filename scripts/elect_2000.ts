@@ -4,7 +4,7 @@ import { promises as fs } from "fs";
 import Papa from "papaparse";
 import { RecordsData, toSqlValue, TurnoutData, VotesData } from "./utils";
 
-interface CandidatPrezidentiale {
+interface CandidateDetails {
   CODU: number;
   DENL: string; // Full name
   DENI: string; // Political affiliation or "Candidat independent"
@@ -19,7 +19,7 @@ interface PVData {
   NUME_CE: string;
   CountyId: number | null;
   LocalityId: number | null;
-  CountryId: number | null;
+  CountryId: string | null;
   NSV: number;
   SVSPEC: number;
   ADRESA: string;
@@ -56,15 +56,15 @@ interface PVData {
 
 const COLOR = "#000000";
 
-async function getPartiesLookup(
+async function getPartiesData(
   electionId: number,
-  candidates: CandidatPrezidentiale[]
+  candidates: CandidateDetails[]
 ) {
   const partyVarNames = new Map<string, string>();
 
-  const partyInserts = candidates.map((party, index) => {
+  const partyInserts = candidates.map((candidate, index) => {
     const varName = `@party_${index}`;
-    partyVarNames.set(party.DENI, varName);
+    partyVarNames.set(candidate.DENI, varName);
 
     return `INSERT INTO \`rezultatevot\`.\`parties\` (
           \`name\`,
@@ -74,8 +74,8 @@ async function getPartiesLookup(
           \`created_at\`,
           \`updated_at\`
         ) VALUES (
-          ${toSqlValue(party.DENI)},
-          ${toSqlValue(party.DENI)},
+          ${toSqlValue(candidate.DENI)},
+          ${toSqlValue(candidate.DENI)},
           ${toSqlValue(COLOR)},
           ${electionId},
           NOW(),
@@ -89,10 +89,10 @@ async function getPartiesLookup(
   };
 }
 
-function getCandidatesLookup(
+function getCandidatesData(
   electionId: number,
   partyVarNames: Map<string, string>,
-  candidates: CandidatPrezidentiale[],
+  candidates: CandidateDetails[],
   resultsAccessorFn?: (name: string) => string
 ) {
   const candidatesVarLookup = new Map<
@@ -135,7 +135,7 @@ function getCandidatesLookup(
 async function parseCandidatesNomenclator(file: string) {
   const rawCandidates = await fs.readFile(file, "utf-8");
 
-  const parsedCandidates = Papa.parse<CandidatPrezidentiale>(rawCandidates, {
+  const parsedCandidates = Papa.parse<CandidateDetails>(rawCandidates, {
     header: true,
     skipEmptyLines: true,
     delimiter: ",",
@@ -185,7 +185,7 @@ async function parseResults(
           \`votes\`
           ) VALUES (
           ${electionId},
-          ${data.CountryId},
+          ${toSqlValue(data.CountryId)},
           ${data.CountyId},
           ${data.LocalityId},
           ${data.NSV},
@@ -360,7 +360,7 @@ async function parseResults(
   };
 }
 
-async function processTur1Data() {
+async function processRound1Data() {
   const ROUND_ONE_ID = 22;
 
   const candidatesTur1 = await parseCandidatesNomenclator(
@@ -370,12 +370,12 @@ async function processTur1Data() {
   const {
     partyInserts: partyInsertsRound1,
     partyVarNames: partyVarNamesRound1,
-  } = await getPartiesLookup(ROUND_ONE_ID, candidatesTur1);
+  } = await getPartiesData(ROUND_ONE_ID, candidatesTur1);
 
   const {
     candidateInserts: candidateInsertsRound1,
     candidatesVarLookup: candidatesVarLookupRound1,
-  } = getCandidatesLookup(ROUND_ONE_ID, partyVarNamesRound1, candidatesTur1);
+  } = getCandidatesData(ROUND_ONE_ID, partyVarNamesRound1, candidatesTur1);
 
   const {
     votesInserts: votesInsertsTur1,
@@ -419,7 +419,7 @@ async function processTur1Data() {
   );
 }
 
-async function processTur2Data() {
+async function processRound2Data() {
   const ROUND_TWO_ID = 21;
 
   const candidatesTur2 = await parseCandidatesNomenclator(
@@ -429,12 +429,12 @@ async function processTur2Data() {
   const {
     partyInserts: partyInsertsRound2,
     partyVarNames: partyVarNamesRound2,
-  } = await getPartiesLookup(ROUND_TWO_ID, candidatesTur2);
+  } = await getPartiesData(ROUND_TWO_ID, candidatesTur2);
 
   const {
     candidateInserts: candidateInsertsRound2,
     candidatesVarLookup: candidatesVarLookupRound2,
-  } = getCandidatesLookup(
+  } = getCandidatesData(
     ROUND_TWO_ID,
     partyVarNamesRound2,
     candidatesTur2,
@@ -485,9 +485,9 @@ async function processTur2Data() {
 
 async function processElectionData() {
   const start = Date.now();
-  await fs.mkdir("data/elect_2000/output");
-  await processTur1Data();
-  await processTur2Data();
+  await fs.mkdir("data/elect_2000/output", { recursive: true });
+  await processRound1Data();
+  await processRound2Data();
 
   const end = Date.now();
 

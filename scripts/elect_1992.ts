@@ -5,7 +5,7 @@ import Papa from "papaparse";
 import { RecordsData, toSqlValue, TurnoutData, VotesData } from "./utils";
 import { stringify } from "csv-stringify/sync";
 
-interface CandidatPrezidentiale {
+interface CandidateDetails {
   NR_CRT: number;
   NUME: string;
   PARTID: string;
@@ -123,15 +123,15 @@ const localitiesMap = {
   234: 180133, //name: "Judetul Ilfov" },
 };
 
-async function getPartiesLookup(
+async function getPartiesData(
   electionId: number,
-  candidates: CandidatPrezidentiale[]
+  candidates: CandidateDetails[]
 ) {
   const partyVarNames = new Map<string, string>();
 
-  const partyInserts = candidates.map((party, index) => {
+  const partyInserts = candidates.map((candidate, index) => {
     const varName = `@party_${index}`;
-    partyVarNames.set(party.PARTID, varName);
+    partyVarNames.set(candidate.PARTID, varName);
 
     return `INSERT INTO \`rezultatevot\`.\`parties\` (
           \`name\`,
@@ -141,8 +141,8 @@ async function getPartiesLookup(
           \`created_at\`,
           \`updated_at\`
         ) VALUES (
-          ${toSqlValue(party.PARTID)},
-          ${toSqlValue(party.PARTID)},
+          ${toSqlValue(candidate.PARTID)},
+          ${toSqlValue(candidate.PARTID)},
           ${toSqlValue(COLOR)},
           ${electionId},
           NOW(),
@@ -156,10 +156,10 @@ async function getPartiesLookup(
   };
 }
 
-function getCandidatesLookup(
+function getCandidatesData(
   electionId: number,
   partyVarNames: Map<string, string>,
-  candidates: CandidatPrezidentiale[]
+  candidates: CandidateDetails[]
 ) {
   const candidatesVarLookup = new Map<
     string,
@@ -199,7 +199,7 @@ function getCandidatesLookup(
 async function parseCandidatesNomenclator(file: string) {
   const rawCandidates = await fs.readFile(file, "utf-8");
 
-  const parsedCandidates = Papa.parse<CandidatPrezidentiale>(rawCandidates, {
+  const parsedCandidates = Papa.parse<CandidateDetails>(rawCandidates, {
     header: true,
     skipEmptyLines: true,
     delimiter: ",",
@@ -466,7 +466,7 @@ async function parseResults(
   };
 }
 
-async function processTur1Data() {
+async function processRound1Data() {
   const ROUND_ONE_ID = 3;
 
   const candidatesTur1 = await parseCandidatesNomenclator(
@@ -476,12 +476,12 @@ async function processTur1Data() {
   const {
     partyInserts: partyInsertsRound1,
     partyVarNames: partyVarNamesRound1,
-  } = await getPartiesLookup(ROUND_ONE_ID, candidatesTur1);
+  } = await getPartiesData(ROUND_ONE_ID, candidatesTur1);
 
   const {
     candidateInserts: candidateInsertsRound1,
     candidatesVarLookup: candidatesVarLookupRound1,
-  } = getCandidatesLookup(ROUND_ONE_ID, partyVarNamesRound1, candidatesTur1);
+  } = getCandidatesData(ROUND_ONE_ID, partyVarNamesRound1, candidatesTur1);
 
   const {
     dataPerCounty: dataPerCountyTur1,
@@ -531,7 +531,7 @@ async function processTur1Data() {
   );
 }
 
-async function processTur2Data() {
+async function processRound2Data() {
   const ROUND_TWO_ID = 2;
 
   const candidatesTur2 = await parseCandidatesNomenclator(
@@ -541,12 +541,12 @@ async function processTur2Data() {
   const {
     partyInserts: partyInsertsRound2,
     partyVarNames: partyVarNamesRound2,
-  } = await getPartiesLookup(ROUND_TWO_ID, candidatesTur2);
+  } = await getPartiesData(ROUND_TWO_ID, candidatesTur2);
 
   const {
     candidateInserts: candidateInsertsRound2,
     candidatesVarLookup: candidatesVarLookupRound2,
-  } = getCandidatesLookup(ROUND_TWO_ID, partyVarNamesRound2, candidatesTur2);
+  } = getCandidatesData(ROUND_TWO_ID, partyVarNamesRound2, candidatesTur2);
 
   const {
     dataPerCounty: dataPerCountyTur2,
@@ -598,10 +598,10 @@ async function processTur2Data() {
 
 async function processElectionData() {
   const start = Date.now();
-  await fs.mkdir("data/elect_1992/output");
+  await fs.mkdir("data/elect_1992/output", { recursive: true });
 
-  await processTur1Data();
-  await processTur2Data();
+  await processRound1Data();
+  await processRound2Data();
 
   const end = Date.now();
 

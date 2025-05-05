@@ -1,7 +1,7 @@
 export interface TurnoutData {
   has_issues: number;
   election_id: number;
-  country_id: number | null;
+  country_id: string | null;
   county_id: number | null;
   locality_id: number | null;
   section: number;
@@ -29,7 +29,7 @@ export interface TurnoutData {
 
 export interface VotesData {
   election_id: number;
-  country_id: number | null;
+  country_id: string | null;
   county_id: number | null;
   locality_id: number | null;
   section: number;
@@ -42,7 +42,7 @@ export interface VotesData {
 export interface RecordsData {
   has_issues: number;
   election_id: number;
-  country_id: number | null;
+  country_id: string | null;
   county_id: number | null;
   locality_id: number | null;
   section: number;
@@ -61,7 +61,8 @@ export interface RecordsData {
   present_voters_mail: number;
 }
 
-export function toSqlValue(val: string | number): string {
+export function toSqlValue(val: string | number | null): string | null {
+  if (val === null) return null;
   return typeof val === "number"
     ? `${val}`
     : `'${val.replace(/'/g, "''").trim()}'`;
