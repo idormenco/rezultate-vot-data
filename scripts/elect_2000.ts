@@ -251,7 +251,7 @@ async function parseResults(
       ${data.A_SV},
       ${data.TVE_SV},
       ${((data.TVE_SV / data.A_SV) * 100).toFixed(2)},
-      'U',
+      ${data.TIP_L === 0 ? "R" : "U"},
       0, 0, 0, 0, 0,
       0, 0, 0, 0, 0
     );`;
@@ -273,7 +273,7 @@ async function parseResults(
       initial_total: data.A_SV,
       total: data.TVE_SV,
       percent: parseFloat(((data.TVE_SV / data.A_SV) * 100).toFixed(2)),
-      area: "U",
+      area: data.TIP_L === 0 ? "R" : "U",
       men_18_24: 0,
       men_25_34: 0,
       men_35_44: 0,
@@ -334,7 +334,7 @@ async function parseResults(
       country_id: data.CountryId,
       county_id: data.CountyId,
       locality_id: data.LocalityId,
-      section: 1,
+      section: data.NSV,
       part: 0,
       eligible_voters_total: data.A_SV,
       eligible_voters_permanent: data.A_SV,

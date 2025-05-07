@@ -9,7 +9,8 @@
     "elect_1996": "tsx scripts/elect_1996.ts",
     "elect_2000": "tsx scripts/elect_2000.ts",
     "elect_2004": "tsx scripts/elect_2004.ts",
-    "prez_2009": "tsx scripts/prez_2009.ts"
+    "prez_2009": "tsx scripts/prez_2009.ts",
+    "prez_2014": "tsx scripts/prez_2014.ts"
   },
   "keywords": [],
   "author": "",

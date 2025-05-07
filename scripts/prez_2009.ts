@@ -11,26 +11,23 @@ interface CandidateDetails {
 
 interface PVData {
   NCE: number;
-  NUME_CE: string;
+  JUDET: string;
+  SIRUTA: number;
   CountyId: number;
   LocalityId: number;
   CountryId: string | null;
-  NSV: number;
-  SVSPEC: number;
+  DENLOC: string;
+  SV: number;
   ADRESA: string;
-  NUME_L: string;
-  COD_L: number;
-  SIRUTA: number;
-  TIP_L: number;
-  MEDIU_L: number;
-  A_SV: number;
-  AP_SV: number;
-  APP_SV: number;
-  APS_SV: number;
-  TVE_SV: number;
-  VN_SV: number;
-  BVP_SV: number;
-  BVRN_SV: number;
+  A: number;
+  B: number;
+  B1: number;
+  B2: number;
+  B3: number;
+  C: number;
+  D: number;
+  E: number;
+  F: number;
   P1: number;
   P2: number;
   P3: number;
@@ -43,6 +40,9 @@ interface PVData {
   P10: number;
   P11: number;
   P12: number;
+  MEDIU: number;
+  SORTARE: number;
+  SPEC: number;
 }
 
 const COLOR = "#000000";
@@ -166,7 +166,7 @@ async function parseResults(
           ${toSqlValue(data.CountryId)},
           ${data.CountyId},
           ${data.LocalityId},
-          ${data.NSV},
+          ${data.SV},
           0,
           \`candidate\`,
           ${varName},
@@ -179,7 +179,7 @@ async function parseResults(
         county_id: data.CountyId,
         locality_id: data.LocalityId,
         part: 0,
-        section: data.NSV,
+        section: data.SV,
         votable_id: varName,
         votable_type: "candidate",
         votes: data[resultsAccessorFn(candidate)],
@@ -219,7 +219,7 @@ async function parseResults(
       ${data.CountryId},
       ${data.CountyId},
       ${data.LocalityId},
-      ${data.NSV},
+      ${data.SV},
       ${data.A_SV},
       0,
       ${data.APP_SV},
@@ -227,9 +227,9 @@ async function parseResults(
       ${data.APS_SV},
       0,
       ${data.A_SV},
-      ${data.TVE_SV},
-      ${((data.TVE_SV / data.A_SV) * 100).toFixed(2)},
-      'U',
+      ${data.C},
+      ${((data.B / data.A) * 100).toFixed(2)},
+      ${data.MEDIU === 1 ? "U" : "R"},
       0, 0, 0, 0, 0,
       0, 0, 0, 0, 0
     );`;
@@ -241,17 +241,17 @@ async function parseResults(
       country_id: data.CountryId,
       county_id: data.CountyId,
       locality_id: data.LocalityId,
-      section: data.NSV,
-      initial_permanent: data.A_SV,
+      section: data.SV,
+      initial_permanent: data.A,
       initial_complement: 0,
       permanent: data.APP_SV,
       complement: 0,
       supplement: data.APS_SV,
       mobile: 0,
       initial_total: data.A_SV,
-      total: data.TVE_SV,
-      percent: parseFloat(((data.TVE_SV / data.A_SV) * 100).toFixed(2)),
-      area: "U",
+      total: data.C,
+      percent: parseFloat(((data.B / data.A) * 100).toFixed(2)),
+      area: data.MEDIU === 1 ? "U" : "R",
       men_18_24: 0,
       men_25_34: 0,
       men_35_44: 0,
@@ -291,7 +291,7 @@ async function parseResults(
         ${data.CountryId},
         ${data.CountyId},
         ${data.LocalityId},
-        ${data.NSV},
+        ${data.SV},
         0,
         ${data.A_SV},
         ${data.A_SV},
@@ -302,8 +302,8 @@ async function parseResults(
         0,
         0,
         0,
-        ${data.TVE_SV},
-        ${data.VN_SV},
+        ${data.C},
+        ${data.D},
         0);
   `);
     recordsData.push({
@@ -312,19 +312,19 @@ async function parseResults(
       country_id: data.CountryId,
       county_id: data.CountyId,
       locality_id: data.LocalityId,
-      section: 1,
+      section: data.SV,
       part: 0,
       eligible_voters_total: data.A_SV,
       eligible_voters_permanent: data.A_SV,
       eligible_voters_special: 0,
       present_voters_total: data.AP_SV,
       present_voters_permanent: data.APP_SV,
-      present_voters_special: data.APS_SV,
+      present_voters_special: data.B3,
       present_voters_supliment: 0,
-      papers_received: 0,
-      papers_unused: 0,
-      votes_valid: data.TVE_SV,
-      votes_null: data.VN_SV,
+      papers_received: data.E,
+      papers_unused: data.F,
+      votes_valid: data.C,
+      votes_null: data.D,
       present_voters_mail: 0,
     });
   }

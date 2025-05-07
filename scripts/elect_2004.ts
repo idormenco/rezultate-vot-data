@@ -12,27 +12,29 @@ interface CandidateDetails {
 }
 
 interface PVData {
-  NCE: number;
-  NUME_CE: string;
   CountyId: number;
   LocalityId: number;
   CountryId: string | null;
+  NCE: number;
+  NUME_CE: string;
   NSV: number;
   SVSPEC: number;
   ADRESA: string;
   NUME_L: string;
-  COD_L: number;
   SIRUTA: number;
-  TIP_L: number;
+  TIP_L: string;
   MEDIU_L: number;
-  A_SV: number;
-  AP_SV: number;
+  A_SVD: number;
+  AIP_SVD: number;
+  AIS_SVD: number;
+  AP_SVD: number;
   APP_SV: number;
-  APS_SV: number;
+  APS1_SV: number;
+  APS2_SV: number;
   TVE_SV: number;
   VN_SV: number;
   BVP_SV: number;
-  BVRN_SV: number;
+  BVN_SV: number;
   P1: number;
   P2: number;
   P3: number;
@@ -244,7 +246,7 @@ async function parseResults(
       ${data.A_SV},
       ${data.TVE_SV},
       ${((data.TVE_SV / data.A_SV) * 100).toFixed(2)},
-      'U',
+      ${data.TIP_L === "C" ? "R" : "U",},
       0, 0, 0, 0, 0,
       0, 0, 0, 0, 0
     );`;
@@ -266,7 +268,7 @@ async function parseResults(
       initial_total: data.A_SV,
       total: data.TVE_SV,
       percent: parseFloat(((data.TVE_SV / data.A_SV) * 100).toFixed(2)),
-      area: "U",
+      area: data.TIP_L === "C" ? "R" : "U",
       men_18_24: 0,
       men_25_34: 0,
       men_35_44: 0,
@@ -327,7 +329,7 @@ async function parseResults(
       country_id: data.CountryId,
       county_id: data.CountyId,
       locality_id: data.LocalityId,
-      section: 1,
+      section: data.NSV,
       part: 0,
       eligible_voters_total: data.A_SV,
       eligible_voters_permanent: data.A_SV,
